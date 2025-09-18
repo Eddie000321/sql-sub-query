@@ -1,0 +1,66 @@
+1. List the product that have min (not null) quantities ordered in one order.
+
+SELECT DISTINCT p.product_id, p.product_name, oi.quantity
+FROM order_items oi
+JOIN products p ON p.product_id = oi.product_id
+WHERE oi.quantity = (SELECT MIN(quantity) FROM order_items);
+
+2. List the name and quantity of the inventory product with maximum quantity (excluding nulls).
+
+SELECT p.product_id, p.product_name, i.quantity
+FROM inventories i 
+JOIN products p
+    ON p.product_id = i.product_id
+    WHERE i.quantity = (
+        SELECT MAX(quantity)
+        FROM inventories 
+        WHERE quantity IS NOT NULL
+    );
+
+
+3. List the countries with minimum numbers of locations (not nulls)
+--A
+SELECT locations.country_id,
+       COUNT(*) AS location_count
+FROM   locations
+WHERE  locations.country_id IS NOT NULL
+GROUP  BY locations.country_id
+ORDER  BY location_count, country_id;
+
+--B
+SELECT MIN(t.location_count) AS min_location_count
+FROM (
+  SELECT locations.country_id,
+         COUNT(*) AS location_count
+  FROM   locations
+  WHERE  locations.country_id IS NOT NULL
+  GROUP  BY locations.country_id
+) t;
+
+--result should be show list of countreis(id, name) and min num of loccations
+SELECT countries.country_id, countries.country_name, location_counts.location_count
+FROM (
+    -- each country, count locations except NULL
+    SELECT country_id, COUNT(*) AS location_count
+    FROM locations
+    WHERE country_id IS NOT NULL
+    GROUP BY country_id 
+) location_counts --
+JOIN countries
+     ON countries.country_id = location_counts.country_id
+WHERE location_counts.location_count = (
+    SELECT MIN(inner_counts.location_count)
+    FROM (
+        SELECT country_id, COUNT(*) AS location_count
+        FROM locations
+        WHERE country_id IS NOT NULL
+        GROUP BY country_id
+    )
+)
+
+
+4. List the salesman(s) with minimum (not null) number of orders.
+
+
+5. List the customer(s) with min number of orders (not nulls).
+
