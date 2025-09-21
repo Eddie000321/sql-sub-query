@@ -19,45 +19,29 @@ JOIN products p
 
 
 3. List the countries with minimum numbers of locations (not nulls)
---A
-SELECT locations.country_id,
-       COUNT(*) AS location_count
-FROM   locations
-WHERE  locations.country_id IS NOT NULL
-GROUP  BY locations.country_id
-ORDER  BY location_count, country_id;
-
---B
-SELECT MIN(t.location_count) AS min_location_count
-FROM (
-  SELECT locations.country_id,
-         COUNT(*) AS location_count
-  FROM   locations
-  WHERE  locations.country_id IS NOT NULL
-  GROUP  BY locations.country_id
-) t;
-
 --result should be show list of countreis(id, name) and min num of loccations
-SELECT countries.country_id, countries.country_name, location_counts.location_count
+SELECT countries.country_id,
+       countries.country_name,
+       per_country_loc_counts.location_count
 FROM (
-    -- each country, count locations except NULL
-    SELECT country_id, COUNT(*) AS location_count
-    FROM locations
-    WHERE country_id IS NOT NULL
-    GROUP BY country_id 
-) location_counts --
+    SELECT country_id,
+           COUNT(*) AS location_count
+    FROM   locations
+    WHERE  country_id IS NOT NULL
+    GROUP  BY country_id 
+) per_country_loc_counts
 JOIN countries
-     ON countries.country_id = location_counts.country_id
-WHERE location_counts.location_count = (
-    SELECT MIN(inner_counts.location_count)
+  ON countries.country_id = per_country_loc_counts.country_id
+WHERE per_country_loc_counts.location_count = (
+    SELECT MIN(m.location_count)
     FROM (
-        SELECT country_id, COUNT(*) AS location_count
-        FROM locations
-        WHERE country_id IS NOT NULL
-        GROUP BY country_id
-    )
-)
-
+        SELECT country_id,
+               COUNT(*) AS location_count
+        FROM   locations
+        WHERE  country_id IS NOT NULL
+        GROUP  BY country_id
+    ) m
+);
 
 4. List the salesman(s) with minimum (not null) number of orders.
 
