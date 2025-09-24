@@ -66,4 +66,16 @@ WHERE (
 -- table CUSTOMERS customer_id name table ORDERS have customer_id
 SELECT c.customer_id, c.name
 FROM customers c
-WHERE (SELECT COUNT(*))
+WHERE (
+    SELECT COUNT(*)
+    FROM orders o
+    WHERE o.customer_id = c.customer_id
+) = (
+    SELECT MIN(
+        (SELECT COUNT(*)
+         FROM orders o2
+         WHERE o2.customer_id = customer_id
+        )
+    )
+    FROM customer c2
+);
