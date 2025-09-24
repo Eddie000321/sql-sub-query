@@ -44,7 +44,26 @@ WHERE per_country_loc_counts.location_count = (
 );
 
 4. List the salesman(s) with minimum (not null) number of orders.
-
+-- table ORDERS have order_id, salesaman_id count(*) cnt and MIN()
+-- have to show
+SELECT e.employee_id, e.first_name, e.last_name
+FROM employees e
+WHERE ( 
+    SELECT COUNT(*)
+    FROM orders o
+    WHERE o.salesman_id = e.employee_id
+) = (
+    SELECT MIN(
+        (SELECT COUNT(*)
+        FROM orders o2
+        WHERE o2.salesman_id = o2.employee_id
+        )
+    )
+    FROM employees o2
+);
 
 5. List the customer(s) with min number of orders (not nulls).
-
+-- table CUSTOMERS customer_id name table ORDERS have customer_id
+SELECT c.customer_id, c.name
+FROM customers c
+WHERE (SELECT COUNT(*))
