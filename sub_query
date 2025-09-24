@@ -3,7 +3,9 @@
 SELECT DISTINCT p.product_id, p.product_name, oi.quantity
 FROM order_items oi
 JOIN products p ON p.product_id = oi.product_id
-WHERE oi.quantity = (SELECT MIN(quantity) FROM order_items);
+WHERE oi.quantity = (
+  SELECT MIN(quantity) FROM order_items WHERE quantity IS NOT NULL
+);
 
 2. List the name and quantity of the inventory product with maximum quantity (excluding nulls).
 
@@ -62,10 +64,27 @@ WHERE (
     FROM employees o2
 );
 
+SELECT e.employee_id, e.first_name, e.last_name
+FROM employees e
+WHERE (
+    SELECT COUNT(*)
+    FROM orders o
+    WHERE o.salesman_id = e.employee_id
+      AND o.salesman_id IS NOT NULL
+) = (
+    SELECT MIN(
+             (SELECT COUNT(*)
+              FROM orders o2
+              WHERE o2.salesman_id = e2.employee_id
+                AND o2.salesman_id IS NOT NULL)
+           )
+    FROM employees e2
+);
+
 5. List the customer(s) with min number of orders (not nulls).
 -- table CUSTOMERS customer_id name table ORDERS have customer_id
 SELECT c.customer_id, c.name
-FROM customers c
+FROM customer c
 WHERE (
     SELECT COUNT(*)
     FROM orders o
@@ -74,8 +93,25 @@ WHERE (
     SELECT MIN(
         (SELECT COUNT(*)
          FROM orders o2
-         WHERE o2.customer_id = customer_id
+         WHERE o2.customer_id = c2.customer_id
         )
     )
     FROM customer c2
+);
+
+SELECT c.customer_id, c.name
+FROM customers c
+WHERE (
+  SELECT COUNT(*)
+  FROM orders o
+  WHERE o.customer_id = c.customer_id
+    AND o.customer_id IS NOT NULL
+) = (
+  SELECT MIN(
+           (SELECT COUNT(*)
+            FROM orders o2
+            WHERE o2.customer_id = c2.customer_id
+              AND o2.customer_id IS NOT NULL)
+         )
+  FROM customers c2
 );
